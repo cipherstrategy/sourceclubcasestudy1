@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SourceClub Savings Engine</title>
+  <style>
+    :root {
+      --navy:#0f172a; --slate:#1e293b; --blue:#2563eb; --green:#10b981;
+      --amber:#f59e0b; --orange:#f97316; --red:#ef4444; --gold:#d99b22;
+      --bg:#f8fafc; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --card:#fff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    .app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+    aside{background:var(--navy);color:#fff;padding:24px 18px;position:sticky;top:0;height:100vh}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:28px}
+    .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1e3a8a 0%,#1e3a8a 55%,#d99b22 56%);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px}
+    .brand h1{margin:0;font-size:16px;line-height:1.1}.brand span{font-size:11px;color:#94a3b8;letter-spacing:.16em;text-transform:uppercase}
+    nav a{display:block;padding:10px 12px;border-radius:10px;color:#cbd5e1;text-decoration:none;font-size:14px;margin-bottom:4px}
+    nav a:hover,nav a.active{background:rgba(255,255,255,.09);color:#fff}
+    main{padding:22px 30px 60px;overflow-x:hidden}
+    .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .topbar h2{font-size:28px;letter-spacing:-.04em;margin:0}.sub{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+    .pill{display:inline-flex;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;border:1px solid var(--border);background:white;color:var(--muted);white-space:nowrap}
+    .demo-pill{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+    .section{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 10px 25px rgba(15,23,42,.04)}
+    .section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+    h3{margin:0;font-size:18px;letter-spacing:-.02em} h4{margin:0 0 8px;font-size:14px}
+    .hero{background:linear-gradient(180deg,#eff6ff,#fff);border-color:#bfdbfe}
+    .hero-title{font-size:34px;line-height:1.05;letter-spacing:-.06em;margin:0 0 10px}
+    .hero-copy{font-size:16px;color:#475569;line-height:1.55;max-width:900px}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+    .metric{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px}
+    .metric .value{font-size:27px;font-weight:900;letter-spacing:-.05em;margin-bottom:4px}.metric .label{color:var(--muted);font-size:13px;font-weight:700}
+    .comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .state-card{border:1px solid var(--border);border-radius:16px;padding:16px;background:#fff}
+    .state-card.current{border-color:#fecaca;background:#fff7f7}.state-card.future{border-color:#bbf7d0;background:#f0fdf4}
+    .state-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding:9px 0;font-size:13px}.state-row:last-child{border-bottom:0}
+    .workflow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+    .step{background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:12px;font-size:13px;font-weight:700}
+    .step b{display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;border-radius:999px;background:var(--blue);color:#fff;margin-right:6px;font-size:12px}
+    .answer-grid,.confidence-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .answer-card,.confidence-card,.rule,.review-card,.knowledge-card,.network-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff}
+    .two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .loader-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    button{border:0;border-radius:12px;padding:10px 13px;background:var(--blue);color:#fff;font-weight:850;cursor:pointer;transition:.15s ease}
+    button:hover{transform:translateY(-1px);opacity:.95} button.secondary{background:#fff;color:var(--text);border:1px solid var(--border)}
+    .supplier-btn{background:#fff;color:var(--text);border:1px solid var(--border);padding:16px;text-align:left;min-height:86px}
+    .supplier-btn.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+    .supplier-btn small{display:block;color:var(--muted);font-weight:650;margin-top:6px}
+    .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px}
+    table{width:100%;border-collapse:collapse;min-width:920px;background:#fff}
+    th,td{padding:11px 12px;border-bottom:1px solid var(--border);text-align:left;font-size:13px;vertical-align:top}
+    th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:#f8fafc}tr:last-child td{border-bottom:0}
+    .badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:850;white-space:nowrap}
+    .badge.green{background:#dcfce7;color:#047857}.badge.amber{background:#fef3c7;color:#b45309}.badge.orange{background:#ffedd5;color:#c2410c}.badge.red{background:#fee2e2;color:#b91c1c}.badge.blue{background:#dbeafe;color:#1d4ed8}.badge.gray{background:#f1f5f9;color:#475569}
+    .green{color:var(--green)}.blue{color:var(--blue)}.amber{color:var(--amber)}.red{color:var(--red)}.gold{color:var(--gold)}.muted{color:var(--muted);font-size:13px;line-height:1.5}
+    .score-bar,.bar-track{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:8px 0}.score-fill{height:100%;border-radius:999px}
+    .signal-grid,.hard-match-grid,.knowledge-capture{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+    .signal-card,.hard-match-card,.capture-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:#f8fafc}
+    .signal-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}.signal-row:last-child{border-bottom:0}
+    .decision-tree{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+    .decision-step{border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px;font-size:12px;line-height:1.4}.decision-step b{display:block;margin-bottom:5px;color:var(--blue)}
+    .compare-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.compare-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;font-size:12px}
+    .formula-box{background:#0f172a;color:#fff;border-radius:14px;padding:14px;font-size:13px;line-height:1.5;margin-top:12px}
+    .review-list{display:grid;gap:12px}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.review-actions button{font-size:12px;padding:8px 10px}
+    .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .copy-box{border:1px solid var(--border);background:#f8fafc;border-radius:14px;padding:14px;font-size:14px;line-height:1.5;margin-top:14px}
+    .fallback-copy{width:100%;min-height:90px;margin-top:12px;border:1px solid var(--border);border-radius:12px;padding:12px;font-family:inherit;font-size:13px;color:var(--text);background:#fff;display:none}
+    .confidence-bars{display:grid;gap:10px;margin-top:14px}.confidence-bar-row{display:grid;grid-template-columns:170px 1fr 90px;gap:12px;align-items:center;font-size:13px}
+    .bar-green,.bar-amber,.bar-red{height:100%}.bar-green{background:var(--green)}.bar-amber{background:var(--amber)}.bar-red{background:var(--red)}
+    .network-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}.network-card{text-align:center}.network-card b{display:block;font-size:24px;letter-spacing:-.04em;margin-bottom:4px}
+    .pipeline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}.pipe-step{background:#f8fafc;border:1px solid var(--border);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:800}.pipe-arrow{color:var(--muted);font-weight:900}
+    footer{color:var(--muted);font-size:13px;line-height:1.6}
+    @media(max-width:1100px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}.metric-grid,.loader-grid,.workflow,.summary-grid,.network-grid{grid-template-columns:1fr 1fr}.two-col,.comparison{grid-template-columns:1fr}}
+    @media(max-width:900px){.answer-grid,.confidence-grid,.signal-grid,.decision-tree,.hard-match-grid,.compare-row,.knowledge-capture,.confidence-bar-row{grid-template-columns:1fr}}
+    @media(max-width:640px){main{padding:18px}.topbar{flex-direction:column}.metric-grid,.loader-grid,.workflow,.summary-grid,.network-grid{grid-template-columns:1fr}}
+  
+    /* Clean internal SaaS dashboard polish */
+    body {
+      background: #f6f8fb;
+    }
+
+    .app {
+      grid-template-columns: 232px 1fr;
+    }
+
+    aside {
+      background: #ffffff;
+      color: var(--text);
+      border-right: 1px solid var(--border);
+      box-shadow: 10px 0 30px rgba(15, 23, 42, .035);
+    }
+
+    .brand h1 {
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .brand span {
+      color: var(--muted);
+    }
+
+    .logo {
+      background: linear-gradient(135deg, #2563eb 0%, #2563eb 56%, #f59e0b 57%);
+      color: #ffffff;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, .22);
+    }
+
+    nav a {
+      color: #334155;
+      font-weight: 750;
+    }
+
+    nav a:hover,
+    nav a.active {
+      background: #eff6ff;
+      color: #1d4ed8;
+      box-shadow: inset 3px 0 0 #2563eb;
+    }
+
+    main {
+      padding: 0 28px 54px;
+    }
+
+    .topbar {
+      margin: 0 -28px 22px;
+      padding: 16px 28px;
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      align-items: center;
+    }
+
+    .topbar h2 {
+      font-size: 21px;
+      letter-spacing: -.03em;
+    }
+
+    .section {
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .045);
+      border-color: #dbe3ee;
+    }
+
+    .hero {
+      background: #ffffff;
+      border-color: #dbe3ee;
+    }
+
+    .hero-title {
+      font-size: 32px;
+      max-width: 880px;
+    }
+
+    .hero-copy {
+      color: #475569;
+      max-width: 960px;
+    }
+
+    .metric,
+    .state-card,
+    .answer-card,
+    .confidence-card,
+    .rule,
+    .review-card,
+    .knowledge-card,
+    .network-card,
+    .signal-card,
+    .hard-match-card,
+    .capture-card {
+      box-shadow: 0 4px 14px rgba(15, 23, 42, .035);
+    }
+
+    .metric .value {
+      font-size: 25px;
+    }
+
+    .badge {
+      display: inline-flex !important;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: max-content !important;
+      height: auto !important;
+      min-height: 0 !important;
+      padding: 5px 9px !important;
+      line-height: 1 !important;
+      border-radius: 999px !important;
+      align-items: center !important;
+      justify-content: center !important;
+      white-space: nowrap !important;
+      flex: 0 0 auto !important;
+      font-size: 11px !important;
+    }
+
+    td .badge,
+    .hard-match-card .badge,
+    .confidence-card .badge {
+      display: inline-flex !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 5px 9px !important;
+      border-radius: 999px !important;
+    }
+
+    .review-card {
+      display: block;
+      min-height: unset;
+    }
+
+    .review-card .badge {
+      align-self: flex-start;
+      margin-left: auto;
+    }
+
+    .quality-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .quality-card {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .quality-card b {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .quality-card p {
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .table-wrap {
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+
+    table {
+      table-layout: auto;
+    }
+
+    th, td {
+      max-width: 320px;
+      overflow-wrap: anywhere;
+    }
+
+    #matchingTable td:nth-child(8) {
+      min-width: 260px;
+      max-width: 380px;
+    }
+
+    #matchingTable td:nth-child(6),
+    #matchingTable th:nth-child(6) {
+      min-width: 116px;
+      max-width: 150px;
+    }
+
+    .section {
+      overflow: hidden;
+    }
+
+    button {
+      box-shadow: 0 6px 16px rgba(37, 99, 235, .16);
+    }
+
+    button.secondary {
+      box-shadow: none;
+    }
+
+    @media(max-width:700px) {
+      .quality-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  
+    .operator-bar {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+
+    .operator-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(15,23,42,.04);
+    }
+
+    .upload-zone {
+      border: 1.5px dashed #bfdbfe;
+      background: #eff6ff;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .upload-zone input {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .run-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .analysis-state {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .state-chip {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: 800;
+      color: #475569;
+    }
+
+    .state-chip.done {
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #bbf7d0;
+    }
+
+    .state-chip.active {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    .completion-banner {
+      display: none;
+      border: 1px solid #bbf7d0;
+      background: #f0fdf4;
+      color: #047857;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 14px;
+      font-weight: 750;
+    }
+
+    @media(max-width:900px) {
+      .operator-bar { grid-template-columns: 1fr; }
+      .analysis-state { grid-template-columns: 1fr 1fr; }
+    }
+
+  
+    details.operator-card summary {
+      list-style: none;
+    }
+
+    details.operator-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.operator-card summary::after {
+      content: " +";
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    details.operator-card[open] summary::after {
+      content: " −";
+    }
+
+    .upload-zone {
+      min-height: 86px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+  
+    /* Final fix: Data Quality should be horizontal and readable */
+    .data-quality-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+
+    .data-quality-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      min-width: 0;
+      box-shadow: 0 4px 14px rgba(15,23,42,.035);
+    }
+
+    .data-quality-card b {
+      display: block;
+      font-size: 26px;
+      line-height: 1.1;
+      margin-bottom: 5px;
+      letter-spacing: -.04em;
+    }
+
+    .data-quality-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .normalization-layout {
+      display: block;
+    }
+
+    .normalization-layout .table-wrap {
+      width: 100%;
+    }
+
+    @media(max-width:900px) {
+      .data-quality-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media(max-width:560px) {
+      .data-quality-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  
+    /* Compact workflow optimization */
+    .compact-explain .answer-card {
+      padding: 12px 14px;
+      min-height: unset;
+    }
+
+    .compact-explain .answer-card p {
+      margin-bottom: 0;
+    }
+
+    .pipeline .pipe-step {
+      white-space: nowrap;
+    }
+
+    #supplierButtons.loader-grid {
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    #supplierButtons .supplier-btn {
+      min-height: unset;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    #supplierButtons .supplier-btn small {
+      display: none;
+    }
+
+    .upload-zone b {
+      font-size: 15px;
+    }
+
+    @media(max-width:900px) {
+      #supplierButtons.loader-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+  
+    /* Compact architecture section */
+    .architecture-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .architecture-item {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, .035);
+    }
+
+    .architecture-item h4 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      letter-spacing: -.02em;
+    }
+
+    .architecture-item ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .architecture-item li {
+      margin-bottom: 6px;
+    }
+
+    .architecture-item li:last-child {
+      margin-bottom: 0;
+    }
+
+    @media(max-width:900px) {
+      .architecture-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand"><div class="logo">SC</div><div><h1>SourceClub</h1><span>Savings Engine</span></div></div>
+      <nav>
+        <a class="active" href="#outcomes">Executive Outcomes</a>
+        <a href="#workflow">System Workflow</a>
+        <a href="#matching">Matching Intelligence</a>
+        <a href="#review">Exception Review</a>
+        <a href="#report">Savings Report</a>
+        <a href="#moat">Strategic Moat</a>
+        <a href="#architecture">Architecture</a>
+      </nav>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div><h2>SourceClub Savings Engine</h2><p class="sub">Working prototype · Mock data only · Built to show the operating model</p></div>
+        <span class="pill demo-pill">Case Study MVP</span>
+      </div>
+
+      <section id="outcomes" class="section hero">
+        <h1 class="hero-title">Turn 10-minute savings analyses into 1-3 minute exception reviews.</h1>
+        <p class="hero-copy">SourceClub runs 20-40 savings analyses each month. At about 10 minutes each, this creates roughly 3.3 to 6.7 hours of manual work. This prototype shows how that workflow can become a 1-3 minute exception review.</p>
+
+        <div class="comparison">
+          <div class="state-card current">
+            <h3>Current State</h3>
+            <div class="state-row"><span>Analysis time</span><b>10 minutes</b></div>
+            <div class="state-row"><span>Founder review</span><b>100%</b></div>
+            <div class="state-row"><span>Monthly volume</span><b>20-40 analyses</b></div>
+            <div class="state-row"><span>Monthly manual work</span><b>5-7+ hrs</b></div>
+          </div>
+          <div class="state-card future">
+            <h3>Future State</h3><p style='margin-top:10px;color:#64748b;font-size:12px;'>*Based on 20-40 analyses/month at 10 minutes today, reduced to roughly 1-3 minutes with exception-only review.</p>
+            <div class="state-row"><span>Analysis time</span><b>1-3 minutes</b></div>
+            <div class="state-row"><span>Founder review</span><b>Exceptions only</b></div>
+            <div class="state-row"><span>Automation rate</span><b>70-90%</b></div>
+            <div class="state-row"><span>Manual work reduced</span><b>2.3-6.0 hrs/mo</b></div>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric"><div class="value" id="currentSpend">$0</div><div class="label">Modeled Current Spend</div></div>
+          <div class="metric"><div class="value green" id="grossSavings">$0</div><div class="label">Projected Gross Savings</div></div>
+          <div class="metric"><div class="value blue" id="autoRate">0%</div><div class="label">Auto-Match Rate</div></div>
+          <div class="metric"><div class="value amber">70-90%</div><div class="label">Manual Time Reduction</div></div>
+        </div>
+      </section>
+
+      
+      
+<section class="section">
+        <div class="section-header">
+          <div>
+            <h3>Upload Purchase History</h3>
+            <p class="sub">Upload a prospect's purchase history and generate a savings analysis.</p>
+          </div>
+          <span class="pill demo-pill" id="analysisMode">Awaiting File</span>
+        </div>
+
+        <div class="operator-card" style="margin-bottom:14px;">
+          <h3 style="font-size:16px;">Upload File</h3>
+          <p class="sub">Supports Benco, Henry Schein, Darby, Patterson, Burkhart, Safco, Net32, and normalized CSV exports.</p>
+          <div class="upload-zone">
+            <b>Drag & Drop Purchase History</b>
+            <input type="file" id="csvUpload" accept=".csv" />
+          </div>
+          <div class="run-row">
+            <button onclick="runAnalysis()">Run Analysis</button>
+            <button class="secondary" onclick="generateReport()">Generate Report</button>
+            <button class="secondary" onclick="resetDemo()">Reset</button>
+          </div>
+        </div>
+
+        
+        <div class="operator-card" style="margin-bottom:14px; padding:12px 14px;">
+          <p class="sub" style="margin:0 0 10px;">Need a sample file? Load demo data.</p>
+          
+<div class="loader-grid" id="supplierButtons">
+  <button class="supplier-btn" onclick="setSupplier('Benco Dental')">Benco Dental</button>
+  <button class="supplier-btn" onclick="setSupplier('Darby Dental')">Darby Dental</button>
+  <button class="supplier-btn" onclick="setSupplier('Henry Schein')">Henry Schein</button>
+  <button class="supplier-btn" onclick="setSupplier('Mixed Supplier')">Mixed Supplier</button>
+</div>
+        </div>
+
+        <div class="analysis-state">
+          <div class="state-chip done" id="stateUpload">1. File loaded</div>
+          <div class="state-chip active" id="stateNormalize">2. Ready to normalize</div>
+          <div class="state-chip" id="stateMatch">3. Matching pending</div>
+          <div class="state-chip" id="stateReport">4. Report pending</div>
+        </div>
+
+        <div class="completion-banner" id="completionBanner">
+          Savings report generated. Clean matches were auto-approved and exceptions were routed to Exception Review Queue.
+        </div>
+      </section>
+
+<section id="workflow" class="section">
+        <div class="section-header">
+          <div>
+            <h3>System Workflow</h3>
+            <p class="sub">One operator flow: upload the file, run matching, review exceptions, and generate the report.</p>
+          </div>
+        </div>
+
+        <div class="pipeline" style="margin-bottom:16px;">
+          <span class="pipe-step">1. Upload</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">2. Normalize</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">3. Enrich SKUs</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">4. Match</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">5. Review Exceptions</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">6. Report</span>
+        </div>
+
+        <div class="answer-grid compact-explain">
+          <div class="answer-card"><b>AI handles</b><p class="muted">Cleanup, SKU enrichment, match suggestions, confidence scoring, unit checks, and explanations.</p></div>
+          <div class="answer-card"><b>Humans review</b><p class="muted">Low-confidence, clinically sensitive, substitute, gray-market, high-dollar, or unmatched items.</p></div>
+          <div class="answer-card"><b>Unclear matches</b><p class="muted">Routed to the Exception Review Queue before they appear in the final report.</p></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div><h3>Implementation Preview: Raw Data → Normalized Data</h3><p class="sub">This section shows how messy supplier exports become a usable savings analysis schema.</p></div>
+          <div><span class="badge green">Blank rows removed</span> <span class="badge amber">Missing SKUs flagged</span> <span class="badge blue">Spend calculated</span></div>
+        </div>
+
+        <h3 style="font-size:15px;margin-bottom:10px;">Data Quality Checks</h3>
+        <div class="data-quality-summary">
+          <div class="data-quality-card"><b id="rowsIngested">0</b><span>Rows ingested</span></div>
+          <div class="data-quality-card"><b id="skuMissing">0</b><span>Missing SKUs</span></div>
+          <div class="data-quality-card"><b id="reviewCount">0</b><span>Needs review</span></div>
+          <div class="data-quality-card"><b id="autoApprovedCount">0</b><span>Auto approved</span></div>
+        </div>
+
+        <h3 style="font-size:15px;margin:18px 0 10px;">Raw Supplier Data</h3>
+        <div class="table-wrap"><table id="rawTable"></table></div>
+
+        <h3 style="font-size:15px;margin:18px 0 10px;">Normalized Data</h3>
+        <div class="table-wrap"><table id="normalizedTable"></table></div>
+      </section>
+
+      <section id="matching" class="section">
+        <div class="section-header">
+          <div><h3>Matching Intelligence: The Core Bottleneck</h3><p class="sub">The assignment says the hard part is matching. This section shows how the system decides when to trust a match, when to ask for help, and what must be reviewed before export.</p></div>
+          
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric"><div class="value" id="mhTotal">0</div><div class="label">Line Items Analyzed</div></div>
+          <div class="metric"><div class="value green" id="mhAuto">0</div><div class="label">Auto-Approved</div></div>
+          <div class="metric"><div class="value amber" id="mhReview">0</div><div class="label">Needs Review</div></div>
+          <div class="metric"><div class="value red" id="mhUnmatched">0</div><div class="label">Unmatched / Risk</div></div>
+        </div>
+
+        <h3 style="font-size:15px;margin:20px 0 8px;">Match Confidence Framework</h3>
+        <div class="confidence-grid">
+          <div class="confidence-card"><h4>95-100% · Auto Approve</h4><span class="badge green">Clean Match</span><div class="score-bar"><div class="score-fill" style="width:97%;background:var(--green)"></div></div><p class="muted">Exact SKU/catalog identifier, equivalent unit, and no risk flags.</p></div>
+          <div class="confidence-card"><h4>80-94% · Exception Review</h4><span class="badge amber">Human Review</span><div class="score-bar"><div class="score-fill" style="width:86%;background:var(--amber)"></div></div><p class="muted">Likely equivalent but missing SKU, pack-size mismatch, house brand, or substitution judgment.</p></div>
+          <div class="confidence-card"><h4>&lt;80% · Manual Research</h4><span class="badge red">Do Not Auto-Match</span><div class="score-bar"><div class="score-fill" style="width:62%;background:var(--red)"></div></div><p class="muted">Not enough evidence to safely include in the report without human research.</p></div>
+        </div>
+
+        <div class="formula-box">
+          <b>Efficiency rule:</b> The founder only reviews exceptions. Clean SKU/unit matches are auto-approved, ambiguous items are routed to review, and risky low-confidence matches are blocked from the final savings claim.
+        </div>
+
+        <h3 style="font-size:15px;margin:20px 0 8px;">Signal-Based Scoring Model</h3>
+        <div class="signal-grid">
+          <div class="signal-card"><b>Positive signals</b><div class="signal-row"><span>Manufacturer SKU exact match</span><b>+45</b></div><div class="signal-row"><span>Supplier SKU or known alias</span><b>+25</b></div><div class="signal-row"><span>Description/category similarity</span><b>+15</b></div><div class="signal-row"><span>Unit/pack compatibility</span><b>+10</b></div><div class="signal-row"><span>Historical approved match</span><b>+20</b></div></div>
+          <div class="signal-card"><b>Penalties / review triggers</b><div class="signal-row"><span>Manufacturer SKU missing</span><b>-15</b></div><div class="signal-row"><span>Pack-size conversion</span><b>-8</b></div><div class="signal-row"><span>House brand alternative</span><b>-10</b></div><div class="signal-row"><span>Clinically sensitive category</span><b>Review</b></div><div class="signal-row"><span>Gray-market pricing risk</span><b>Block</b></div></div>
+        </div>
+
+        <h3 style="font-size:15px;margin:20px 0 8px;">Matching Analysis Table</h3>
+        <div class="table-wrap"><table id="matchingTable"></table></div>
+
+        </section>
+
+      <section id="review" class="section">
+        <div class="section-header">
+          <div><h3>Exception Review Queue</h3>
+<div style="margin:10px 0 16px;padding:12px;border:1px solid #dbeafe;background:#eff6ff;border-radius:12px;">
+<b>Human-in-the-loop review</b><br>
+High-confidence matches are auto-approved. Only uncertain line items are routed to the Exception Review Queue before the final savings report is generated.
+</div>
+<p class="sub">Humans review the items where judgment matters, not every line item.</p></div>
+          <button onclick="approveAllSafe()">Approve Safe Matches</button>
+        </div>
+        <div id="reviewQueue" class="review-list"></div>
+      </section>
+
+      <section id="report" class="section">
+        <div class="section-header">
+          <div><h3>Savings Report + Savings Confidence</h3><p class="sub">The output is a customer-ready savings report with a trust layer showing which matches are approved, need review, or carry risk.</p></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;"><button onclick="exportCSV()">Export CSV</button><button class="secondary" onclick="copySummary()">Copy Summary</button></div>
+        </div>
+        <div class="summary-grid">
+          <div class="metric"><div class="value" id="rCurrent">$0</div><div class="label">Current Annual Spend</div></div>
+          <div class="metric"><div class="value green" id="rProjected">$0</div><div class="label">Projected Spend</div></div>
+          <div class="metric"><div class="value green" id="rNet">$0</div><div class="label">Projected Savings</div></div>
+          <div class="metric"><div class="value blue" id="rRoi">0x</div><div class="label">Savings Rate</div></div>
+        </div>
+
+        
+<h3 style="font-size:15px;margin:20px 0 8px;">Savings Confidence Engine™</h3>
+        <div class="summary-grid">
+          <div class="metric"><div class="value green" id="confApproved">0</div><div class="label">Auto Approved</div></div>
+          <div class="metric"><div class="value amber" id="confReview">0</div><div class="label">Needs Review</div></div>
+          <div class="metric"><div class="value red" id="confRisk">0</div><div class="label">Unmatched / Risk</div></div>
+          <div class="metric"><div class="value blue">70-90%</div><div class="label">Expected Automation Rate</div></div>
+        </div>
+        <div class="confidence-bars">
+          <div class="confidence-bar-row"><b>Approved</b><div class="bar-track"><div class="bar-green" style="width:87%"></div></div><span class="badge green">87%</span></div>
+          <div class="confidence-bar-row"><b>Needs Review</b><div class="bar-track"><div class="bar-amber" style="width:10%"></div></div><span class="badge amber">10%</span></div>
+          <div class="confidence-bar-row"><b>Unmatched / Risk</b><div class="bar-track"><div class="bar-red" style="width:3%"></div></div><span class="badge red">3%</span></div>
+        </div>
+        <div class="copy-box" id="summaryText"></div>
+        <textarea id="fallbackCopy" class="fallback-copy" readonly></textarea>
+      </section>
+
+      <section id="moat" class="section">
+        <div class="section-header">
+          <div><h3>SourceClub Match Network™</h3><p class="sub">Every approved match becomes reusable company knowledge. This turns the system from a workflow automation into a system that gets smarter over time.</p></div>
+          <span class="pill demo-pill">Future Vision</span>
+        </div>
+        <div class="network-grid">
+          <div class="network-card"><b class="amber">65%</b><span class="muted">Month 1 auto-match rate</span></div>
+          <div class="network-card"><b class="blue">85%</b><span class="muted">Month 6 auto-match rate</span></div>
+          <div class="network-card"><b class="green">95%</b><span class="muted">Month 12 auto-match rate</span></div>
+          <div class="network-card"><b>50K</b><span class="muted">Known product relationships</span></div>
+        </div>
+
+        <div class="knowledge-capture">
+          <div class="capture-card"><b>When a founder approves a match, the system asks why.</b><p class="muted">Same manufacturer, equivalent alternative, house brand substitution, unit conversion, promo eligible, clinical judgment, or chargeback pricing.</p></div>
+          <div class="capture-card"><b>That decision becomes reusable company knowledge.</b><p class="muted">Future analyses auto-match faster, route fewer exceptions, and reduce dependence on tribal founder knowledge.</p></div>
+        </div>
+
+        <div class="pipeline">
+          <span class="pipe-step">Practice Upload</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">AI Match</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Human Correction</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">SourceClub Memory</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Future Auto-Match</span>
+        </div>
+      </section>
+
+      <section id="architecture" class="section">
+        <div class="section-header"><div>
+
+<section class="section">
+  <div class="section-header">
+    <div>
+      <h3>Match Memory</h3>
+      <p class="sub">The system gets smarter over time by learning from approved review decisions.</p>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric">
+      <div class="value">2,184</div>
+      <div class="label">Approved Matches Learned</div>
+    </div>
+    <div class="metric">
+      <div class="value">6</div>
+      <div class="label">Auto-Approved This Analysis</div>
+    </div>
+    <div class="metric">
+      <div class="value">4</div>
+      <div class="label">Future Reviews Avoided</div>
+    </div>
+  </div>
+
+  <p class="sub" style="margin-top:16px;">
+    Every approved review decision becomes part of SourceClub's Match Memory. Similar products are automatically recognized in future analyses, reducing manual review over time.
+  </p>
+</section>
+<h3>Why This Architecture Works</h3>
+<p class="sub">AI handles repetitive analysis work, humans review exceptions, and the system learns from each approved decision.</p>
+
+<div class="architecture-grid">
+  <div class="architecture-item">
+    <h4>AI Layer</h4>
+    <ul>
+      <li>Normalize supplier exports</li>
+      <li>Enrich missing SKUs</li>
+      <li>Match products across catalogs</li>
+      <li>Score confidence</li>
+      <li>Explain recommendations</li>
+    </ul>
+  </div>
+
+  <div class="architecture-item">
+    <h4>Human Layer</h4>
+    <ul>
+      <li>Review exception items</li>
+      <li>Approve substitutions</li>
+      <li>Validate sensitive products</li>
+      <li>Confirm high-impact opportunities</li>
+    </ul>
+  </div>
+
+  <div class="architecture-item">
+    <h4>Learning Layer</h4>
+    <ul>
+      <li>Store approved matches</li>
+      <li>Capture reviewer decisions</li>
+      <li>Improve future matching</li>
+      <li>Build Match Memory</li>
+    </ul>
+  </div>
+</div></section>
+
+      <section class="section">
+        <footer><b>Core thesis:</b> The goal is not to remove the founder's judgment. The goal is to eliminate repetitive spreadsheet work, auto-approve clean matches, route unclear line items to a fast human review queue, and convert founder knowledge into a repeatable process.</footer>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const currency=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
+    const money2=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+
+    const baseRows=[
+      ["Nitrile Exam Gloves Medium 100ct","Benco","BEN-1001","",24,8.9,"Frontier Dental",6.41,96,"Manufacturer SKU","Auto Approved","Brand-for-brand glove match."],
+      ["NeoStretch Chloroprene Gloves 100ct","Benco","BEN-1002","NS-MED",18,12.8,"Dental City",6.41,88,"Semantic Match + Pack Check","Needs Review","Description and glove type match. Pack-size/brand preference should be reviewed before approval."],
+      ["Collagen Plug 10ct","Henry Schein","HS-8821","COL-10",8,97.4,"Salvin",78.77,97,"Manufacturer SKU","Auto Approved","Exact SKU match."],
+      ["Carbide Bur 7902 10pk","Darby","DAR-778","",14,49.49,"Dental City",27.70,82,"Fuzzy Match","Unit Conversion","Possible 7901/7902 substitution requires review."],
+      ["Intraoral Camera Sleeve","Benco","BEN-222","",3,289,"Dental City",173.73,86,"Semantic Match","Alternative Recommended","Comparable lower-cost alternative."],
+      ["Sterilization Pouch 3.5x9 500pk","Darby","DAR-901","SP-359",20,17.26,"DDS Dental",11.33,91,"Unit Normalized","Unit Conversion","Matched by size + category. SourceClub sells 200-pack, price normalized to 500-pack equivalent before savings."],
+      ["Bite Registration Fast Set 2pk","Benco","BEN-HOUSE-22","",12,18.5,"Frontier Dental",6.74,76,"House Brand Alternative","Alternative Recommended","Benco house brand mapped to comparable alternative."],
+      ["3M Scotchbond Universal","Henry Schein","HS-3M-777","3M-41258",4,386.25,"DDS Dental",362.17,94,"Manufacturer SKU","Auto Approved","Clinically sensitive product. Brand-for-brand only."],
+      ["H6/H7 Sickle Scaler","Benco","BEN-SCALER","",10,12.5,"Dental City",7.99,78,"Semantic Match","Needs Review","Instrument alternative likely acceptable."],
+      ["Microcopy NeoDiamond Burs","Burkhart","BUR-MICRO","MIC-55",10,49.19,"Dental City",39.35,91,"Promo Logic","Auto Approved","Buy 4 get 1 free promo applied."],
+      ["Handpiece Lubricant","Safco","SAF-777","",6,31.1,"Frontier Dental",18.2,83,"Semantic Match","Alternative Recommended","Non-clinically sensitive substitution."],
+      ["Anesthetic Needles 100ct","Darby","DAR-NEED","",9,12.45,"DC Dental",10.9,72,"Fuzzy Match","Needs Review","Needle specs should be checked."],
+      ["Whitening Kit Venus","Benco","BEN-WHITE","VEN-02",2,225,"Frontier Dental",163.73,92,"Manufacturer SKU","Auto Approved","Brand-for-brand match."],
+      ["Flowable Composite Syringe","Henry Schein","HS-FLOW","KERR-44",5,87.28,"Frontier Dental",87.28,99,"Manufacturer SKU","Auto Approved","Exact match, no savings."],
+      ["Gray Market 3M Product","Frontier","FR-3M-G","3M-GRAY",3,107.48,"DDS Dental",362.17,68,"Risk Rule","Higher Priced","Lower price flagged as gray market risk."],
+      ["Unknown Garrison Matrix Kit","Benco","BEN-UNK","",1,145,"",0,42,"No Match","Unmatched","Manual research needed."],
+      ["Nitrile Gloves Blue Medium 300ct","Patterson","PAT-GLV300","",10,19.75,"Dental City",17.85,84,"Pack Size Normalized","Unit Conversion","Customer buys 300-count. Compared against equivalent SourceClub 100-count pricing rolled up to 300-count."]
+    ];
+
+    const dataSets={
+      "Benco Dental":baseRows.filter(r=>["Benco","Frontier"].includes(r[1])).concat(baseRows.slice(0,2)),
+      "Darby Dental":baseRows.filter(r=>r[1]==="Darby").concat(baseRows.slice(8,12)),
+      "Henry Schein":baseRows.filter(r=>r[1]==="Henry Schein").concat(baseRows.slice(0,4)),
+      "Mixed Supplier":baseRows
+    };
+
+    let selectedSupplier="Mixed Supplier";
+    let rows=structuredClone(dataSets[selectedSupplier]);
+    let reviewActions={};
+
+    function displayStatus(status){
+      if(status === "Alternative Recommended") return "Alternative";
+      if(status === "Unit Conversion") return "Unit Check";
+      if(status === "Auto Approved") return "Approved";
+      if(status === "Needs Review") return "Review";
+      if(status === "Higher Priced") return "Risk";
+      return status;
+    }
+
+    function statusClass(status){if(status==="Auto Approved")return"green";if(status==="Needs Review"||status==="Unit Conversion")return"amber";if(status==="Alternative Recommended")return"orange";if(status==="Higher Priced"||status==="Unmatched")return"red";return"blue"}
+    function normalizedRows(){return rows.map((r,i)=>{const[product,supplier,supplierSku,mfgSku,qty,unitPrice,scSupplier,scPrice,confidence,method,status,note]=r;const currentSpend=qty*unitPrice;const sourceSpend=scPrice?qty*scPrice:0;return{id:i,product,supplier,supplierSku,mfgSku,qty,unitPrice,currentSpend,scSupplier,scPrice,sourceSpend,confidence,method,status:reviewActions[i]||status,note}})}
+    function setSupplier(name){selectedSupplier=name;rows=structuredClone(dataSets[name]);reviewActions={};const mode=document.getElementById("analysisMode");if(mode)mode.innerText="Demo data loaded";updateWorkflowState(1);render();document.getElementById("outcomes").scrollIntoView({behavior:"smooth"})}
+
+
+    function updateWorkflowState(step){
+      const upload = document.getElementById("stateUpload");
+      const normalize = document.getElementById("stateNormalize");
+      const match = document.getElementById("stateMatch");
+      const report = document.getElementById("stateReport");
+      const banner = document.getElementById("completionBanner");
+      if(!upload) return;
+
+      [upload, normalize, match, report].forEach(el => el.className = "state-chip");
+      banner.style.display = "none";
+
+      if(step >= 1) upload.className = "state-chip done";
+      if(step === 1) normalize.className = "state-chip active";
+      if(step >= 2) normalize.className = "state-chip done";
+      if(step === 2) match.className = "state-chip active";
+      if(step >= 3) match.className = "state-chip done";
+      if(step === 3) report.className = "state-chip active";
+      if(step >= 4) {
+        report.className = "state-chip done";
+        banner.style.display = "block";
+      }
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let current = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+
+        if (char === '"' && insideQuotes && next === '"') {
+          current += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+
+      const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim().replace(/\s+/g, "_"));
+
+      return lines.slice(1).map((line, index) => {
+        const values = parseCSVLine(line);
+        const record = {};
+        headers.forEach((h, i) => record[h] = values[i] || "");
+
+        const product = record.product || record.product_name || record.description || record.item_description || `Uploaded Product ${index + 1}`;
+        const supplier = record.supplier || record.supplier_name || record.vendor || "Uploaded Supplier";
+        const supplierSku = record.supplier_sku || record.sku || record.item_number || `UP-${index + 1}`;
+        const mfgSku = record.manufacturer_sku || record.mfg_sku || record.manufacturer_item_number || "";
+        const qty = Number(record.quantity || record.qty || 1) || 1;
+        const unitPrice = Number(String(record.unit_price || record.price || record.current_price || 0).replace(/[$,]/g, "")) || 0;
+
+        const match = suggestMatch(product, supplier, mfgSku, unitPrice, index);
+        return [product, supplier, supplierSku, mfgSku, qty, unitPrice, match.scSupplier, match.scPrice, match.confidence, match.method, match.status, match.note];
+      });
+    }
+
+    function suggestMatch(product, supplier, mfgSku, unitPrice, index) {
+      const p = product.toLowerCase();
+      if (mfgSku) {
+        return { scSupplier: "SourceClub Catalog", scPrice: Math.max(unitPrice * 0.78, 1), confidence: 95, method: "Manufacturer SKU", status: "Auto Approved", note: "Manufacturer SKU provided, matched against catalog identifier." };
+      }
+      if (p.includes("glove")) {
+        return { scSupplier: "Dental City", scPrice: Math.max(unitPrice * 0.72, 1), confidence: 86, method: "Semantic Match + Pack Check", status: "Needs Review", note: "Likely glove match, but missing manufacturer SKU requires review." };
+      }
+      if (p.includes("scotchbond") || p.includes("3m")) {
+        return { scSupplier: "DDS Dental", scPrice: Math.max(unitPrice * 0.94, 1), confidence: 91, method: "Brand-Sensitive Match", status: "Auto Approved", note: "Clinically sensitive product. Brand-for-brand comparison prioritized." };
+      }
+      if (p.includes("pouch") || p.includes("pack") || p.includes("box")) {
+        return { scSupplier: "DDS Dental", scPrice: Math.max(unitPrice * 0.65, 1), confidence: 83, method: "Pack Size Normalized", status: "Unit Conversion", note: "Pack-size or unit conversion needed before final approval." };
+      }
+      if (p.includes("benco") || p.includes("house")) {
+        return { scSupplier: "Frontier Dental", scPrice: Math.max(unitPrice * 0.60, 1), confidence: 76, method: "House Brand Alternative", status: "Alternative Recommended", note: "House brand product. Equivalent alternative suggested." };
+      }
+      if (index % 7 === 0) {
+        return { scSupplier: "", scPrice: 0, confidence: 48, method: "No Match", status: "Unmatched", note: "Not enough evidence to safely match without manual research." };
+      }
+      return { scSupplier: "Frontier Dental", scPrice: Math.max(unitPrice * 0.80, 1), confidence: 88, method: "Semantic Match", status: "Needs Review", note: "Likely match based on description and category. Review recommended." };
+    }
+
+    function handleCSVUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const parsed = parseCSV(e.target.result);
+        if (!parsed.length) {
+          alert("Could not parse CSV. Please include a header row and product data.");
+          return;
+        }
+        selectedSupplier = file.name.replace(/\.csv$/i, "");
+        rows = parsed;
+        reviewActions = {};
+        const mode = document.getElementById("analysisMode");
+        if (mode) mode.innerText = "CSV uploaded";
+        updateWorkflowState(1);
+        render();
+      };
+      reader.readAsText(file);
+    }
+
+    function runAnalysis() {
+      updateWorkflowState(3);
+      render();
+      document.getElementById("matching").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function generateReport() {
+      updateWorkflowState(4);
+      render();
+      document.getElementById("report").scrollIntoView({ behavior: "smooth" });
+    }
+
+
+    function renderSupplierButtons(){
+      document.getElementById("supplierButtons").innerHTML=Object.keys(dataSets).map(name=>`<button class="supplier-btn ${name===selectedSupplier?"active":""}" onclick="setSupplier('${name}')">${name}<small>${dataSets[name].length} rows · messy mock export</small></button>`).join("");
+    }
+    function renderRawTable(data){
+      document.getElementById("rawTable").innerHTML=`<thead><tr><th>Item Desc</th><th>Vendor</th><th>Item #</th><th>MFG #</th><th>Qty?</th><th>Price?</th></tr></thead><tbody>${data.map(r=>`<tr><td>${r.product}</td><td>${r.supplier}</td><td>${r.supplierSku}</td><td>${r.mfgSku||'<span class="badge amber">blank</span>'}</td><td>${r.qty}</td><td>${money2(r.unitPrice)}</td></tr>`).join("")}</tbody>`;
+    }
+    function renderNormalizedTable(data){
+      document.getElementById("normalizedTable").innerHTML=`<thead><tr><th>Product</th><th>Supplier</th><th>Supplier SKU</th><th>MFG SKU</th><th>Qty</th><th>Unit Price</th><th>Total Spend</th></tr></thead><tbody>${data.map(r=>`<tr><td>${r.product}</td><td>${r.supplier}</td><td>${r.supplierSku}</td><td>${r.mfgSku||'<span class="badge amber">Needs Enrichment</span>'}</td><td>${r.qty}</td><td>${money2(r.unitPrice)}</td><td>${money2(r.currentSpend)}</td></tr>`).join("")}</tbody>`;
+    }
+    function renderMatchingTable(data){
+      document.getElementById("matchingTable").innerHTML=`<thead><tr><th>Product</th><th>Current</th><th>SourceClub</th><th>Method</th><th>Confidence</th><th>Status</th><th>Savings</th><th>Why this match?</th></tr></thead><tbody>${data.map(r=>{const savings=r.scPrice?r.currentSpend-r.sourceSpend:0;return`<tr><td><b>${r.product}</b><br><span class="muted">${r.supplierSku}</span></td><td>${r.supplier}<br>${money2(r.unitPrice)}</td><td>${r.scSupplier||"No match"}<br>${r.scPrice?money2(r.scPrice):". "}</td><td>${r.method}</td><td><span class="badge ${r.confidence>=90?"green":r.confidence>=70?"amber":"red"}">${r.confidence}%</span></td><td><span class="badge ${statusClass(r.status)}">${displayStatus(r.status)}</span></td><td class="${savings>=0?"green":"red"}"><b>${money2(savings)}</b></td><td><b>${r.confidence>=90?"Auto-approve":r.confidence>=70?"Review exception":"Manual research"}</b><br><span class="muted">${r.note}</span></td></tr>`}).join("")}</tbody>`;
+    }
+    function renderReviewQueue(data){
+      const review=data.filter(r=>r.confidence<90||["Needs Review","Alternative Recommended","Unit Conversion","Higher Priced","Unmatched"].includes(r.status));
+      document.getElementById("reviewCount").innerText=review.length;
+      if(!review.length){document.getElementById("reviewQueue").innerHTML=`<div class="review-card"><b>No exceptions left</b><p class="muted">All products are approved or auto-matched.</p></div>`;return}
+      document.getElementById("reviewQueue").innerHTML=review.map(r=>`<div class="review-card"><div style="display:flex;justify-content:space-between;gap:12px;"><div><b>${r.product}</b><p class="muted">${r.note}</p></div><span class="badge ${statusClass(r.status)}">${r.status}</span></div><p class="muted"><b>AI recommendation:</b> ${r.scSupplier||"Manual research needed"} at ${r.scPrice?money2(r.scPrice):". "} · ${r.confidence}% confidence</p><div class="review-actions"><button onclick="setReviewAction(${r.id}, 'Auto Approved')">Approve</button><button class="secondary" onclick="setReviewAction(${r.id}, 'Unmatched')">Mark Unmatched</button><button class="secondary" onclick="setReviewAction(${r.id}, 'Alternative Recommended')">Recommend Alternative</button></div></div>`).join("");
+    }
+    function setReviewAction(id,status){reviewActions[id]=status;render()}
+    function approveAllSafe(){normalizedRows().forEach(r=>{if(r.confidence>=70&&r.status!=="Higher Priced"&&r.status!=="Unmatched")reviewActions[r.id]="Auto Approved"});render()}
+    function renderReport(data){
+      const current=data.reduce((s,r)=>s+r.currentSpend,0);
+      const projected=data.reduce((s,r)=>s+(r.scPrice?r.sourceSpend:r.currentSpend),0);
+      const gross=current-projected; const membership=350*12; const net=gross-membership; const roi=membership>0?(gross/membership).toFixed(1):"0.0";
+      const autoCount=data.filter(r=>r.status==="Auto Approved").length; const auto=Math.round(autoCount/data.length*100);
+      const unmatched=data.filter(r=>r.status==="Unmatched"||r.status==="Higher Priced").length;
+      const needsReview=data.filter(r=>r.confidence<90||["Needs Review","Alternative Recommended","Unit Conversion","Higher Priced","Unmatched"].includes(r.status)).length;
+      document.getElementById("currentSpend").innerText=currency(current);
+      document.getElementById("grossSavings").innerText=currency(gross);
+      document.getElementById("autoRate").innerText=auto+"%";
+      document.getElementById("rCurrent").innerText=currency(current);
+      document.getElementById("rProjected").innerText=currency(projected);
+      document.getElementById("rNet").innerText=currency(gross);
+      document.getElementById("rRoi").innerText=(current ? ((gross/current)*100).toFixed(1) : "0.0")+"%";
+      document.getElementById("rowsIngested").innerText=data.length;
+      document.getElementById("skuMissing").innerText=data.filter(r=>!r.mfgSku).length;
+      document.getElementById("mhTotal").innerText=data.length;
+      document.getElementById("mhAuto").innerText=autoCount;
+      const autoApprovedCount = document.getElementById("autoApprovedCount");
+      if(autoApprovedCount) autoApprovedCount.innerText = autoCount;
+      document.getElementById("mhReview").innerText=needsReview;
+      document.getElementById("mhUnmatched").innerText=unmatched;
+      const confApproved = document.getElementById("confApproved");
+      const confReview = document.getElementById("confReview");
+      const confRisk = document.getElementById("confRisk");
+      if(confApproved) confApproved.innerText = autoCount;
+      if(confReview) confReview.innerText = needsReview;
+      if(confRisk) confRisk.innerText = unmatched;
+      document.getElementById("summaryText").innerText=`SourceClub analyzed ${data.length} purchase history lines from ${selectedSupplier}, representing ${currency(current)} in modeled annual supply spend. The engine identifies ${currency(gross)} in projected savings, a ${(current ? ((gross/current)*100).toFixed(1) : "0.0")}% savings rate on this mock analysis. Clean matches are auto-approved; uncertain matches are routed to Exception Review Queue with match reasoning, unit/pack-size flags, and procurement intelligence notes.`;
+    }
+    async function copySummary(){
+      const text=document.getElementById("summaryText").innerText; const fallback=document.getElementById("fallbackCopy");
+      try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);alert("Executive summary copied.");return}throw new Error("Clipboard API unavailable")}
+      catch(err){fallback.style.display="block";fallback.value=text;fallback.focus();fallback.select();try{const ok=document.execCommand("copy");alert(ok?"Executive summary copied.":"Clipboard blocked. Press Command+C or Ctrl+C to copy the highlighted summary.")}catch(e){alert("Clipboard blocked. Press Command+C or Ctrl+C to copy the highlighted summary.")}}
+    }
+    function exportCSV(){
+      const data = normalizedRows();
+
+      const headers = [
+        "Product",
+        "Current Supplier",
+        "Supplier SKU",
+        "Manufacturer SKU",
+        "Quantity",
+        "Current Unit Price",
+        "Current Spend",
+        "SourceClub Supplier",
+        "SourceClub Unit Price",
+        "Projected SourceClub Spend",
+        "Projected Savings",
+        "Savings %",
+        "Match Method",
+        "Confidence",
+        "Status",
+        "Review Required",
+        "Recommendation"
+      ];
+
+      const rows = data.map(r => {
+        const currentSpend = r.currentSpend || 0;
+        const projectedSpend = r.scPrice ? r.sourceSpend : currentSpend;
+        const savings = currentSpend - projectedSpend;
+        const savingsPct = currentSpend ? ((savings / currentSpend) * 100).toFixed(1) + "%" : "0.0%";
+        const reviewRequired = (r.confidence < 90 || ["Needs Review","Alternative Recommended","Unit Conversion","Higher Priced","Unmatched"].includes(r.status)) ? "Yes" : "No";
+
+        return [
+          r.product,
+          r.supplier,
+          r.supplierSku,
+          r.mfgSku || "",
+          r.qty,
+          r.unitPrice.toFixed(2),
+          currentSpend.toFixed(2),
+          r.scSupplier || "No match",
+          r.scPrice ? r.scPrice.toFixed(2) : "",
+          projectedSpend.toFixed(2),
+          savings.toFixed(2),
+          savingsPct,
+          r.method,
+          r.confidence + "%",
+          r.status,
+          reviewRequired,
+          r.note
+        ];
+      });
+
+      const currentTotal = data.reduce((sum, r) => sum + r.currentSpend, 0);
+      const projectedTotal = data.reduce((sum, r) => sum + (r.scPrice ? r.sourceSpend : r.currentSpend), 0);
+      const savingsTotal = currentTotal - projectedTotal;
+      const savingsRate = currentTotal ? ((savingsTotal / currentTotal) * 100).toFixed(1) + "%" : "0.0%";
+
+      const summaryRows = [
+        ["Summary"],
+        ["Customer / File", selectedSupplier],
+        ["Line Items Analyzed", data.length],
+        ["Current Spend", currentTotal.toFixed(2)],
+        ["Projected SourceClub Spend", projectedTotal.toFixed(2)],
+        ["Projected Savings", savingsTotal.toFixed(2)],
+        ["Savings Rate", savingsRate],
+        ["Auto Approved", data.filter(r => r.status === "Auto Approved").length],
+        ["Needs Review", data.filter(r => r.confidence < 90 || ["Needs Review","Alternative Recommended","Unit Conversion","Higher Priced","Unmatched"].includes(r.status)).length],
+        [],
+        headers
+      ];
+
+      const csvRows = [...summaryRows, ...rows];
+
+      const csv = csvRows.map(row =>
+        row.map(value => `"${String(value ?? "").replaceAll('"','""')}"`).join(",")
+      ).join("
+");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeName = selectedSupplier.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      a.href = url;
+      a.download = `${safeName || "sourceclub"}-savings-analysis.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function resetDemo(){selectedSupplier="Mixed Supplier";rows=structuredClone(dataSets[selectedSupplier]);reviewActions={};const mode=document.getElementById("analysisMode");if(mode)mode.innerText="Demo data loaded";updateWorkflowState(1);render()}
+    function render(){const data=normalizedRows();renderSupplierButtons();renderRawTable(data);renderNormalizedTable(data);renderMatchingTable(data);renderReviewQueue(data);renderReport(data)}
+    const uploadInput = document.getElementById("csvUpload");
+    if (uploadInput) uploadInput.addEventListener("change", handleCSVUpload);
+    document.addEventListener('DOMContentLoaded', () => {
+      try { renderSupplierButtons(); } catch(e) {}
+      updateWorkflowState(1);
+      render();
+    });
+  </script>
+</body>
+</html>
